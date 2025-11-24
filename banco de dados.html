@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Dados - Feed Interativo</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           CSS - ESTILIZAÇÃO
+           ========================================= */
+
+        /* :root define variáveis globais. Se mudar a cor aqui, muda no site todo */
+        :root {
+            --primary-color: #2d8b8b;  /* Cor principal (verde água) */
+            --primary-dark: #236e6e;   /* Cor principal mais escura (hover) */
+            --bg-color: #f4f7f6;       /* Cor de fundo do site */
+            --card-bg: #ffffff;        /* Cor de fundo dos posts */
+            --text-color: #333;        /* Cor do texto principal */
+            --text-muted: #777;        /* Cor de texto secundário (cinza) */
+            --border-radius: 12px;     /* Arredondamento padrão das bordas */
+            --color-bd: #3498db;       /* Cor específica para tags de Banco de Dados */
+        }
+
+        /* Reset básico para remover margens padrão do navegador */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
+
+        /* --- CABEÇALHO (HEADER) --- */
+        header {
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 0 30px; 
+            height: 60px;
+            /* Flexbox para alinhar logo na esquerda e usuário na direita */
+            display: flex; align-items: center; justify-content: space-between; 
+            /* Fixed prende o cabeçalho no topo ao rolar a página */
+            position: fixed; width: 100%; top: 0; z-index: 1000; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        .user-info { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        
+        /* Círculo com iniciais do usuário */
+        .avatar-circle {
+            width: 35px; height: 35px; background-color: white; color: var(--primary-color);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem; text-transform: uppercase;
+        }
+
+        /* --- LAYOUT PRINCIPAL (GRID) --- */
+        .main-container {
+            /* Cria 2 colunas: Sidebar (250px) e Feed (o resto do espaço - 1fr) */
+            display: grid; grid-template-columns: 250px 1fr; gap: 25px;
+            max-width: 1000px; /* Limita a largura para não ficar muito esticado em telas grandes */
+            margin: 90px auto 30px; /* Margem superior de 90px para não ficar embaixo do Header */
+            padding: 0 20px;
+        }
+
+        /* --- BARRA LATERAL (SIDEBAR) --- */
+        .sidebar-left { 
+            position: sticky; /* Sticky faz ela acompanhar a rolagem até certo ponto */
+            top: 90px; 
+            height: fit-content; 
+        }
+        
+        .menu-item {
+            display: flex; align-items: center; padding: 15px; color: #555; text-decoration: none;
+            border-radius: var(--border-radius); margin-bottom: 5px; transition: all 0.3s ease; font-weight: 600;
+        }
+        .menu-item:hover { background-color: #e0ebeb; color: var(--primary-color); }
+        .menu-item.active { background-color: var(--primary-color); color: white; } /* Item selecionado */
+
+        /* --- ÁREA DO FEED --- */
+        .feed-area { display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Caixa de Criar Post */
+        .create-post-box { background: var(--card-bg); padding: 20px; border-radius: var(--border-radius); }
+        .create-input-wrapper { display: flex; gap: 15px; margin-bottom: 15px; }
+        .create-post-box textarea {
+            width: 100%; border: none; resize: none; background: #f0f2f5; padding: 15px;
+            border-radius: 20px; outline: none; font-size: 1rem;
+        }
+        
+        .create-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #eee; }
+        
+        /* Ícones de interação (clicáveis) */
+        .action-icons i { 
+            color: var(--primary-color); font-size: 1.3rem; cursor: pointer; transition: transform 0.2s; margin-right: 15px;
+        }
+        .action-icons i:hover { transform: scale(1.2); } /* Efeito de zoom ao passar mouse */
+
+        .btn-post {
+            background-color: var(--primary-color); color: white; border: none; padding: 8px 25px;
+            border-radius: 20px; cursor: pointer; font-weight: 700; transition: background 0.3s;
+        }
+        .btn-post:hover { background-color: var(--primary-dark); }
+
+        /* --- CARD DE POSTAGEM --- */
+        .post-card {
+            background: var(--card-bg); border-radius: var(--border-radius); padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid var(--color-bd);
+            animation: fadeIn 0.5s ease; /* Animação de entrada */
+        }
+        
+        /* Definição da animação fade-in (aparecer de baixo pra cima) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .post-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .post-content p { margin-bottom: 15px; line-height: 1.6; color: #444; }
+        
+        /* Estilos para anexos */
+        .post-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #eee; }
+        .code-block {
+            background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px;
+            font-family: monospace; margin: 10px 0; font-size: 0.9rem;
+        }
+
+        /* Rodapé do Post (Likes e Comentários) */
+        .post-footer { display: flex; gap: 25px; color: var(--text-muted); font-size: 0.9rem; border-top: 1px solid #f0f0f0; padding-top: 15px; }
+        .interaction-item { cursor: pointer; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+        .interaction-item:hover { color: var(--primary-color); }
+
+        /* --- SISTEMA DE COMENTÁRIOS (CSS NOVO) --- */
+        .area-comentarios {
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; 
+            display: none; /* COMEÇA INVISÍVEL */
+        }
+        /* Classe que será adicionada via Javascript para mostrar a área */
+        .area-comentarios.aberto { display: block; animation: fadeIn 0.3s ease; }
+        
+        .input-comentario-wrapper { display: flex; gap: 10px; }
+        .input-comentario {
+            flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; background: #f9f9f9; outline: none;
+        }
+        .btn-enviar-comentario {
+            background: var(--primary-color); color: white; border: none; width: 35px; height: 35px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .lista-respostas { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .resposta-item { background: #f0f2f5; padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; }
+        .resposta-autor { font-weight: 700; font-size: 0.8rem; color: var(--primary-dark); margin-bottom: 2px;}
+
+        /* Responsividade para Celulares (telas menores que 900px) */
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 70px 1fr; } /* Sidebar fica fininha */
+            .menu-item span { display: none; } /* Esconde texto do menu */
+            .menu-item { justify-content: center; } /* Centraliza ícones */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Banco de Dados</div>
+        <div class="user-info">
+            <span>Beatris Caetano</span>
+            <div class="avatar-circle">BC</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <nav class="sidebar-left">
+            <a href="Meus Cursos.html" class="menu-item active">
+                <i class="fas fa-book"></i> <span>Meus Cursos</span>
+            </a>
+            
+            <a href="login.html" class="menu-item">
+                <i class="fas fa-user"></i> <span>Meu Perfil</span>
+            </a>
+        </nav>
+
+        <main class="feed-area">
+            
+            <div class="create-post-box">
+                <div class="create-input-wrapper">
+                    <div class="avatar-circle" style="background: #eee; color: #999; min-width: 35px;">BC</div>
+                    <textarea id="texto-post" placeholder="Poste uma dúvida sobre Banco de Dados..."></textarea>
+                </div>
+                
+                <input type="file" id="file-input-hidden" style="display: none;" onchange="mostrarNomeArquivo()">
+
+                <div class="create-actions">
+                    <div class="action-icons">
+                        <i class="fas fa-image" title="Adicionar Imagem" onclick="abrirSeletorArquivo('imagem')"></i>
+                        <i class="fas fa-paperclip" title="Anexar Arquivo" onclick="abrirSeletorArquivo('arquivo')"></i>
+                        <span id="file-name-display"></span>
+                    </div>
+                    
+                    <button class="btn-post" onclick="criarPost()">Postar</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <span class="course-tag" style="background: #3498db; cursor: pointer;">Tudo</span>
+                <span class="course-tag" style="background: #ccc; color: #555; cursor: pointer;">Minhas Dúvidas</span>
+            </div>
+
+            <div id="feed-dinamico"></div>
+
+            <div class="post-card bd">
+                <div class="post-header">
+                    <div class="author-info">
+                        <div class="avatar-circle" style="background: #3498db; color: white;">MV</div>
+                        <div>
+                            <div class="author-name">Márcio V.</div>
+                            <div class="post-time">Há 2 horas</div>
+                        </div>
+                    </div>
+                    <span class="course-tag bg-bd">SQL</span>
+                </div>
+                <div class="post-content">
+                    <p>Alguém sabe a diferença prática entre <strong>Inner Join</strong> e <strong>Left Join</strong>?</p>
+                    <div class="code-block">SELECT * FROM alunos INNER JOIN notas...</div>
+                </div>
+                <div class="post-footer">
+                    <div class="interaction-item" onclick="curtirPost(this)">
+                        <i class="far fa-heart"></i> <span class="likes-count">12</span>
+                    </div>
+                    <div class="interaction-item" onclick="toggleComentarios(this)">
+                        <i class="far fa-comment"></i> <span class="comments-count">5</span>
+                    </div>
+                </div>
+
+                <div class="area-comentarios">
+                    <div class="input-comentario-wrapper">
+                        <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
+                        <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div class="lista-respostas">
+                        <div class="resposta-item">
+                            <div class="resposta-autor">João P.</div>
+                            Inner Join só traz o que tem correspondência em ambas. Left Join traz tudo da esquerda mesmo sem par na direita.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-card bd">
+                <div class="post-header">
+                    <div class="author-info">
+                        <div class="avatar-circle" style="background: #2ecc71; color: white;">Prof</div>
+                        <div>
+                            <div class="author-name">Prof. Carlos</div>
+                            <div class="post-time">Há 5 horas</div>
+                        </div>
+                    </div>
+                    <span class="course-tag bg-bd">Modelagem</span>
+                </div>
+                <div class="post-content">
+                    <p>Não esqueçam de normalizar as tabelas até a 3ª FN! 📊</p>
+                </div>
+                <div class="post-footer">
+                    <div class="interaction-item" onclick="curtirPost(this)">
+                        <i class="far fa-heart"></i> <span class="likes-count">45</span>
+                    </div>
+                    <div class="interaction-item" onclick="toggleComentarios(this)">
+                        <i class="far fa-comment"></i> <span class="comments-count">10</span>
+                    </div>
+                </div>
+
+                <div class="area-comentarios">
+                    <div class="input-comentario-wrapper">
+                        <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
+                        <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div class="lista-respostas"></div> </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        
+        // --- SELEÇÃO DE ARQUIVO ---
+        
+        // Função chamada ao clicar no ícone de clip ou imagem
+        function abrirSeletorArquivo(tipo) {
+            const input = document.getElementById('file-input-hidden');
+            
+            // Configura se aceita só imagens ou qualquer arquivo
+            if(tipo === 'imagem') {
+                input.accept = "image/*";
+            } else {
+                input.removeAttribute('accept');
+            }
+            
+            // Simula um clique real no input file escondido
+            input.click();
+        }
+
+        // Mostra o nome do arquivo selecionado ao lado dos ícones
+        function mostrarNomeArquivo() {
+            const input = document.getElementById('file-input-hidden');
+            const display = document.getElementById('file-name-display');
+            
+            if (input.files && input.files.length > 0) {
+                display.innerText = "📎 " + input.files[0].name;
+                display.style.color = "#2d8b8b";
+            } else {
+                display.innerText = "";
+            }
+        }
+
+        // --- SISTEMA DE LIKES ---
+
+        // Função chamada ao clicar no botão de coração
+        function curtirPost(btn) {
+            const icon = btn.querySelector('i'); // Pega o ícone dentro do botão clicado
+            const countSpan = btn.querySelector('.likes-count'); // Pega o número
+            let likes = parseInt(countSpan.innerText); // Converte texto "12" para número 12
+
+            // Verifica se é 'far' (vazio/regular) ou 'fas' (solid/cheio)
+            if (icon.classList.contains('far')) {
+                // Ação de Curtir
+                icon.classList.remove('far'); 
+                icon.classList.add('fas');    
+                icon.style.color = '#e74c3c'; // Muda cor para vermelho
+                likes++; // Aumenta +1
+            } else {
+                // Ação de Descurtir
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = ''; // Remove cor inline (volta ao padrão)
+                likes--; // Diminui -1
+            }
+            
+            // Atualiza o texto na tela
+            countSpan.innerText = likes;
+        }
+
+        // --- SISTEMA DE COMENTÁRIOS ---
+
+        // Função que mostra ou esconde a div de comentários
+        function toggleComentarios(btn) {
+            // .closest procura o elemento pai mais próximo com a classe 'post-card'
+            const card = btn.closest('.post-card');
+            const areaComentarios = card.querySelector('.area-comentarios');
+            
+            // .toggle adiciona a classe se não existir, remove se existir
+            areaComentarios.classList.toggle('aberto');
+            
+            // Se abriu, já coloca o cursor no input para digitar
+            if(areaComentarios.classList.contains('aberto')){
+                areaComentarios.querySelector('input').focus();
+            }
+        }
+
+        // Função para adicionar um novo comentário na lista
+        function enviarComentario(btn) {
+            const areaInput = btn.parentElement; 
+            const input = areaInput.querySelector('input');
+            const texto = input.value;
+            const card = btn.closest('.post-card'); 
+
+            // Se o texto for vazio, não faz nada
+            if (texto.trim() === "") return;
+
+            // Cria o HTML do novo comentário usando Template Strings (``)
+            const novaResposta = `
+                <div class="resposta-item">
+                    <div class="resposta-autor">Beatris Caetano</div>
+                    ${texto}
+                </div>
+            `;
+
+            // Adiciona o HTML no final da lista de respostas
+            const lista = card.querySelector('.lista-respostas');
+            lista.insertAdjacentHTML('beforeend', novaResposta);
+
+            // Limpa o campo de texto
+            input.value = "";
+
+            // Atualiza o contador visual de comentários (ícone do balão)
+            const commentCountSpan = card.querySelector('.comments-count');
+            let count = parseInt(commentCountSpan.innerText);
+            commentCountSpan.innerText = count + 1;
+        }
+
+        // --- CRIAÇÃO DE POST ---
+
+        function criarPost() {
+            // Pega os valores dos inputs
+            var texto = document.getElementById("texto-post").value;
+            var fileInput = document.getElementById("file-input-hidden");
+            
+            // Validação: Não pode postar vazio e sem arquivo
+            if (texto.trim() === "" && fileInput.files.length === 0) {
+                alert("Escreva algo ou anexe um arquivo!");
+                return;
+            }
+
+            var conteudoExtra = "";
+            // Lógica para visualizar o arquivo (Imagem ou Genérico)
+            if (fileInput.files && fileInput.files[0]) {
+                var arquivo = fileInput.files[0];
+                
+                if (arquivo.type.startsWith('image/')) {
+                    // Cria URL temporária para imagem
+                    var imgUrl = URL.createObjectURL(arquivo);
+                    conteudoExtra = `<img src="${imgUrl}" class="post-image">`;
+                } else {
+                    // HTML para arquivo genérico
+                    conteudoExtra = `
+                        <div class="file-attachment">
+                            <i class="fas fa-file-alt"></i>
+                            <span>${arquivo.name}</span>
+                        </div>`;
+                }
+            }
+
+            // Monta o HTML completo do card
+            // NOTA: Adicionamos os onclicks de curtir e comentar aqui também para funcionarem nos novos posts
+            var novoCard = `
+                <div class="post-card bd">
+                    <div class="post-header">
+                        <div class="author-info">
+                            <div class="avatar-circle">BC</div>
+                            <div>
+                                <div class="author-name">Beatris Caetano</div>
+                                <div class="post-time">Agora mesmo</div>
+                            </div>
+                        </div>
+                        <span class="course-tag bg-bd">Postagem</span>
+                    </div>
+                    <div class="post-content">
+                        <p>${texto}</p>
+                        ${conteudoExtra}
+                    </div>
+                    <div class="post-footer">
+                        <div class="interaction-item" onclick="curtirPost(this)">
+                            <i class="far fa-heart"></i> <span class="likes-count">0</span>
+                        </div>
+                        <div class="interaction-item" onclick="toggleComentarios(this)">
+                            <i class="far fa-comment"></i> <span class="comments-count">0</span>
+                        </div>
+                        <div class="interaction-item" style="margin-left:auto; color:#d63031; cursor:pointer;" onclick="this.closest('.post-card').remove()">Excluir</div>
+                    </div>
+
+                    <div class="area-comentarios">
+                        <div class="input-comentario-wrapper">
+                            <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
+                            <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                        <div class="lista-respostas"></div>
+                    </div>
+                </div>
+            `;
+
+            // Insere o novo card no topo da lista (afterbegin)
+            var feed = document.getElementById("feed-dinamico");
+            feed.insertAdjacentHTML('afterbegin', novoCard);
+
+            // Reseta os campos para o estado inicial
+            document.getElementById("texto-post").value = "";
+            fileInput.value = ""; 
+            document.getElementById('file-name-display').innerText = "";
+        }
+    </script>
+</body>
+</html>

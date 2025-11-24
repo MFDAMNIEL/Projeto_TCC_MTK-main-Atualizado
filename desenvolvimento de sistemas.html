@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desenv. de Sistemas - Feed Interativo</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           CSS - ESTILIZAÇÃO
+           ========================================= */
+
+        /* :root define variáveis globais. MANTIDO O PADRÃO VERDE ÁGUA */
+        :root {
+            --primary-color: #2d8b8b;  /* Verde Água */
+            --primary-dark: #236e6e;   /* Hover */
+            --bg-color: #f4f7f6;       /* Fundo */
+            --card-bg: #ffffff;        /* Cards */
+            --text-color: #333;        
+            --text-muted: #777;        
+            --border-radius: 12px;     
+            --color-highlight: #3498db; /* Azul para destaque das tags */
+        }
+
+        /* Reset básico */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
+
+        /* --- CABEÇALHO (HEADER) --- */
+        header {
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 0 30px; 
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between; 
+            position: fixed; width: 100%; top: 0; z-index: 1000; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        .user-info { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        
+        .avatar-circle {
+            width: 35px; height: 35px; background-color: white; color: var(--primary-color);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem; text-transform: uppercase;
+        }
+
+        /* --- LAYOUT PRINCIPAL (GRID) --- */
+        .main-container {
+            display: grid; grid-template-columns: 250px 1fr; gap: 25px;
+            max-width: 1000px; 
+            margin: 90px auto 30px; padding: 0 20px;
+        }
+
+        /* --- BARRA LATERAL (SIDEBAR) --- */
+        .sidebar-left { 
+            position: sticky; top: 90px; height: fit-content; 
+        }
+        
+        .menu-item {
+            display: flex; align-items: center; padding: 15px; color: #555; text-decoration: none;
+            border-radius: var(--border-radius); margin-bottom: 5px; transition: all 0.3s ease; font-weight: 600;
+        }
+        .menu-item:hover { background-color: #e0ebeb; color: var(--primary-color); }
+        .menu-item.active { background-color: var(--primary-color); color: white; } 
+
+        /* --- ÁREA DO FEED --- */
+        .feed-area { display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Caixa de Criar Post */
+        .create-post-box { background: var(--card-bg); padding: 20px; border-radius: var(--border-radius); }
+        .create-input-wrapper { display: flex; gap: 15px; margin-bottom: 15px; }
+        .create-post-box textarea {
+            width: 100%; border: none; resize: none; background: #f0f2f5; padding: 15px;
+            border-radius: 20px; outline: none; font-size: 1rem;
+        }
+        
+        .create-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #eee; }
+        
+        .action-icons i { 
+            color: var(--primary-color); font-size: 1.3rem; cursor: pointer; transition: transform 0.2s; margin-right: 15px;
+        }
+        .action-icons i:hover { transform: scale(1.2); }
+
+        .btn-post {
+            background-color: var(--primary-color); color: white; border: none; padding: 8px 25px;
+            border-radius: 20px; cursor: pointer; font-weight: 700; transition: background 0.3s;
+        }
+        .btn-post:hover { background-color: var(--primary-dark); }
+
+        /* --- CARD DE POSTAGEM --- */
+        .post-card {
+            background: var(--card-bg); border-radius: var(--border-radius); padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+            border-left: 5px solid var(--color-highlight); 
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .post-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .author-info { display: flex; gap: 12px; align-items: center; }
+        .author-name { font-weight: 700; font-size: 1rem; }
+        .post-time { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .course-tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 15px; font-weight: 700; color: white; }
+        .bg-highlight { background-color: var(--color-highlight); }
+
+        .post-content p { margin-bottom: 15px; line-height: 1.6; color: #444; }
+        
+        .post-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #eee; }
+        .code-block {
+            background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px;
+            font-family: monospace; margin: 10px 0; font-size: 0.9rem;
+        }
+
+        .post-footer { display: flex; gap: 25px; color: var(--text-muted); font-size: 0.9rem; border-top: 1px solid #f0f0f0; padding-top: 15px; }
+        .interaction-item { cursor: pointer; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+        .interaction-item:hover { color: var(--primary-color); }
+
+        /* --- SISTEMA DE COMENTÁRIOS --- */
+        .area-comentarios {
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; display: none; 
+        }
+        .area-comentarios.aberto { display: block; animation: fadeIn 0.3s ease; }
+        
+        .input-comentario-wrapper { display: flex; gap: 10px; }
+        .input-comentario {
+            flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; background: #f9f9f9; outline: none;
+        }
+        .btn-enviar-comentario {
+            background: var(--primary-color); color: white; border: none; width: 35px; height: 35px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .lista-respostas { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .resposta-item { background: #f0f2f5; padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; }
+        .resposta-autor { font-weight: 700; font-size: 0.8rem; color: var(--primary-dark); margin-bottom: 2px;}
+
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 70px 1fr; } 
+            .menu-item span { display: none; }
+            .menu-item { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Desenv. de Sistemas</div>
+        <div class="user-info">
+            <span>Beatris Caetano</span>
+            <div class="avatar-circle">BC</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <nav class="sidebar-left">
+            <a href="Meus Cursos.html" class="menu-item active">
+                <i class="fas fa-book"></i> <span>Meus Cursos</span>
+            </a>
+            
+            <a href="login.html" class="menu-item">
+                <i class="fas fa-user"></i> <span>Meu Perfil</span>
+            </a>
+        </nav>
+
+        <main class="feed-area">
+            
+            <div class="create-post-box">
+                <div class="create-input-wrapper">
+                    <div class="avatar-circle" style="background: #eee; color: #999; min-width: 35px;">BC</div>
+                    <textarea id="texto-post" placeholder="Poste uma dúvida sobre Scrum, UML ou DevOps..."></textarea>
+                </div>
+                
+                <input type="file" id="file-input-hidden" style="display: none;" onchange="mostrarNomeArquivo()">
+
+                <div class="create-actions">
+                    <div class="action-icons">
+                        <i class="fas fa-image" title="Adicionar Imagem" onclick="abrirSeletorArquivo('imagem')"></i>
+                        <i class="fas fa-paperclip" title="Anexar Arquivo" onclick="abrirSeletorArquivo('arquivo')"></i>
+                        <span id="file-name-display"></span>
+                    </div>
+                    
+                    <button class="btn-post" onclick="criarPost()">Postar</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <span class="course-tag" style="background: #3498db; cursor: pointer;">Tudo</span>
+                <span class="course-tag" style="background: #ccc; color: #555; cursor: pointer;">Minhas Dúvidas</span>
+            </div>
+
+            <div id="feed-dinamico"></div>
+
+            <div class="post-card bd">
+                <div class="post-header">
+                    <div class="author-info">
+                        <div class="avatar-circle" style="background: #f1c40f; color: white;">LC</div>
+                        <div>
+                            <div class="author-name">Lucas Agile</div>
+                            <div class="post-time">Há 50 min</div>
+                        </div>
+                    </div>
+                    <span class="course-tag bg-highlight">Scrum</span>
+                </div>
+                <div class="post-content">
+                    <p>No Scrum, qual é exatamente a diferença entre o <strong>Product Backlog</strong> e o <strong>Sprint Backlog</strong>? Sempre confundo quem prioriza o quê.</p>
+                </div>
+                <div class="post-footer">
+                    <div class="interaction-item" onclick="curtirPost(this)">
+                        <i class="far fa-heart"></i> <span class="likes-count">14</span>
+                    </div>
+                    <div class="interaction-item" onclick="toggleComentarios(this)">
+                        <i class="far fa-comment"></i> <span class="comments-count">3</span>
+                    </div>
+                </div>
+
+                <div class="area-comentarios">
+                    <div class="input-comentario-wrapper">
+                        <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
+                        <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div class="lista-respostas">
+                        <div class="resposta-item">
+                            <div class="resposta-autor">Ana Dev</div>
+                            O <b>Product Backlog</b> é tudo que o produto precisa (gerido pelo PO). O <b>Sprint Backlog</b> é o que o time escolheu fazer na Sprint atual.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-card bd">
+                <div class="post-header">
+                    <div class="author-info">
+                        <div class="avatar-circle" style="background: #9b59b6; color: white;">PR</div>
+                        <div>
+                            <div class="author-name">Prof. Ricardo</div>
+                            <div class="post-time">Há 3 horas</div>
+                        </div>
+                    </div>
+                    <span class="course-tag bg-highlight">DevOps</span>
+                </div>
+                <div class="post-content">
+                    <p>Não subestimem a importância do pipeline de CI/CD! Automatizar os testes antes do deploy evita muita dor de cabeça em produção. 🔄🏗️</p>
+                    <div class="code-block">git push -> test -> build -> deploy</div>
+                </div>
+                <div class="post-footer">
+                    <div class="interaction-item" onclick="curtirPost(this)">
+                        <i class="far fa-heart"></i> <span class="likes-count">42</span>
+                    </div>
+                    <div class="interaction-item" onclick="toggleComentarios(this)">
+                        <i class="far fa-comment"></i> <span class="comments-count">8</span>
+                    </div>
+                </div>
+
+                <div class="area-comentarios">
+                    <div class="input-comentario-wrapper">
+                        <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
+                        <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div class="lista-respostas"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        
+        // --- SELEÇÃO DE ARQUIVO ---
+        function abrirSeletorArquivo(tipo) {
+            const input = document.getElementById('file-input-hidden');
+            
+            if(tipo === 'imagem') {
+                input.accept = "image/*";
+            } else {
+                input.removeAttribute('accept');
+            }
+            input.click();
+        }
+
+        function mostrarNomeArquivo() {
+            const input = document.getElementById('file-input-hidden');
+            const display = document.getElementById('file-name-display');
+            
+            if (input.files && input.files.length > 0) {
+                display.innerText = "📎 " + input.files[0].name;
+                display.style.color = "#2d8b8b";
+            } else {
+                display.innerText = "";
+            }
+        }
+
+        // --- SISTEMA DE LIKES ---
+        function curtirPost(btn) {
+            const icon = btn.querySelector('i');
+            const countSpan = btn.querySelector('.likes-count');
+            let likes = parseInt(countSpan.innerText);
+
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far'); 
+                icon.classList.add('fas');    
+                icon.style.color = '#e74c3c'; 
+                likes++; 
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = ''; 
+                likes--; 
+            }
+            countSpan.innerText = likes;
+        }
+
+        // --- SISTEMA DE COMENTÁRIOS ---
+        function toggleComentarios(btn) {
+            const card = btn.closest('.post-card');
+            const areaComentarios = card.querySelector('.area-comentarios');
+            areaComentarios.classList.toggle('aberto');
+            
+            if(areaComentarios.classList.contains('aberto')){
+                areaComentarios.querySelector('input').focus();
+            }
+        }
+
+        function enviarComentario(btn) {
+            const areaInput = btn.parentElement; 
+            const input = areaInput.querySelector('input');
+            const texto = input.value;
+            const card = btn.closest('.post-card'); 
+
+            if (texto.trim() === "") return;
+
+            const novaResposta = `
+                <div class="resposta-item">
+                    <div class="resposta-autor">Beatris Caetano</div>
+                    ${texto}
+                </div>
+            `;
+
+            const lista = card.querySelector('.lista-respostas');
+            lista.insertAdjacentHTML('beforeend', novaResposta);
+            input.value = "";
+
+            const commentCountSpan = card.querySelector('.comments-count');
+            let count = parseInt(commentCountSpan.innerText);
+            commentCountSpan.innerText = count + 1;
+        }
+
+        // --- CRIAÇÃO DE POST ---
+        function criarPost() {
+            var texto = document.getElementById("texto-post").value;
+            var fileInput = document.getElementById("file-input-hidden");
+            
+            if (texto.trim() === "" && fileInput.files.length === 0) {
+                alert("Escreva algo ou anexe um arquivo!");
+                return;
+            }
+
+            var conteudoExtra = "";
+            if (fileInput.files && fileInput.files[0]) {
+                var arquivo = fileInput.files[0];
+                
+                if (arquivo.type.startsWith('image/')) {
+                    var imgUrl = URL.createObjectURL(arquivo);
+                    conteudoExtra = `<img src="${imgUrl}" class="post-image">`;
+                } else {
+                    conteudoExtra = `
+                        <div class="file-attachment">
+                            <i class="fas fa-file-alt"></i>
+                            <span>${arquivo.name}</span>
+                        </div>`;
+                }
+            }
+
+            var novoCard = `
+                <div class="post-card bd">
+                    <div class="post-header">
+                        <div class="author-info">
+                            <div class="avatar-circle">BC</div>
+                            <div>
+                                <div class="author-name">Beatris Caetano</div>
+                                <div class="post-time">Agora mesmo</div>
+                            </div>
+                        </div>
+                        <span class="course-tag bg-highlight">Postagem</span>
+                    </div>
+                    <div class="post-content">
+                        <p>${texto}</p>
+                        ${conteudoExtra}
+                    </div>
+                    <div class="post-footer">
+                        <div class="interaction-item" onclick="curtirPost(this)">
+                            <i class="far fa-heart"></i> <span class="likes-count">0</span>
+                        </div>
+                        <div class="interaction-item" onclick="toggleComentarios(this)">
+                            <i class="far fa-comment"></i> <span class="comments-count">0</span>
+                        </div>
+                        <div class="interaction-item" style="margin-left:auto; color:#d63031; cursor:pointer;" onclick="this.closest('.post-card').remove()">Excluir</div>
+                    </div>
+
+                    <div class="area-comentarios">
+                        <div class="input-comentario-wrapper">
+                            <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
+                            <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                        <div class="lista-respostas"></div>
+                    </div>
+                </div>
+            `;
+
+            var feed = document.getElementById("feed-dinamico");
+            feed.insertAdjacentHTML('afterbegin', novoCard);
+
+            document.getElementById("texto-post").value = "";
+            fileInput.value = ""; 
+            document.getElementById('file-name-display').innerText = "";
+        }
+    </script>
+</body>
+</html>
