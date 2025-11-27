@@ -101,6 +101,40 @@
         }
         .btn-post:hover { background-color: var(--primary-dark); }
 
+        /* --- TAGS (CORREÇÃO DA PERGUNTA ANTERIOR) --- */
+        .course-tag {
+            padding: 5px 15px;       
+            border-radius: 20px;     
+            font-size: 0.8rem;       
+            font-weight: 700;        
+            color: white;            
+            display: inline-flex;    
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Classe auxiliar para usar a cor definida nas variáveis */
+        .bg-bd {
+            background-color: var(--color-bd);
+        }
+        
+        /* ESTILOS DE FILTRO */
+        .filter-btn {
+            transition: all 0.2s;
+        }
+        
+        .filter-btn.active-filter {
+            background: var(--primary-color) !important; 
+            color: white !important;
+            box-shadow: 0 0 5px rgba(45, 139, 139, 0.5);
+        }
+
+        /* Estilo para esconder posts */
+        .post-card.hidden {
+            display: none;
+        }
+        
+
         /* --- CARD DE POSTAGEM --- */
         .post-card {
             background: var(--card-bg); border-radius: var(--border-radius); padding: 20px;
@@ -201,13 +235,13 @@
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <span class="course-tag" style="background: #3498db; cursor: pointer;">Tudo</span>
-                <span class="course-tag" style="background: #ccc; color: #555; cursor: pointer;">Minhas Dúvidas</span>
+                <span id="filtro-tudo" class="course-tag filter-btn active-filter" style="background: #3498db; cursor: pointer;" onclick="filtrarPosts('todos')">Tudo</span>
+                <span id="filtro-minhas" class="course-tag filter-btn" style="background: #ccc; color: #555; cursor: pointer;" onclick="filtrarPosts('meus')">Minhas Dúvidas</span>
             </div>
 
             <div id="feed-dinamico"></div>
 
-            <div class="post-card bd">
+            <div class="post-card bd" data-author="MV">
                 <div class="post-header">
                     <div class="author-info">
                         <div class="avatar-circle" style="background: #3498db; color: white;">MV</div>
@@ -245,7 +279,7 @@
                 </div>
             </div>
 
-            <div class="post-card bd">
+            <div class="post-card bd" data-author="Prof">
                 <div class="post-header">
                     <div class="author-info">
                         <div class="avatar-circle" style="background: #2ecc71; color: white;">Prof</div>
@@ -281,24 +315,21 @@
 
     <script>
         
+        // Identificador do usuário logado (Beatris Caetano)
+        const USER_INITIALS = "BC"; 
+
         // --- SELEÇÃO DE ARQUIVO ---
         
-        // Função chamada ao clicar no ícone de clip ou imagem
         function abrirSeletorArquivo(tipo) {
             const input = document.getElementById('file-input-hidden');
-            
-            // Configura se aceita só imagens ou qualquer arquivo
             if(tipo === 'imagem') {
                 input.accept = "image/*";
             } else {
                 input.removeAttribute('accept');
             }
-            
-            // Simula um clique real no input file escondido
             input.click();
         }
 
-        // Mostra o nome do arquivo selecionado ao lado dos ícones
         function mostrarNomeArquivo() {
             const input = document.getElementById('file-input-hidden');
             const display = document.getElementById('file-name-display');
@@ -313,59 +344,45 @@
 
         // --- SISTEMA DE LIKES ---
 
-        // Função chamada ao clicar no botão de coração
         function curtirPost(btn) {
-            const icon = btn.querySelector('i'); // Pega o ícone dentro do botão clicado
-            const countSpan = btn.querySelector('.likes-count'); // Pega o número
-            let likes = parseInt(countSpan.innerText); // Converte texto "12" para número 12
+            const icon = btn.querySelector('i');
+            const countSpan = btn.querySelector('.likes-count');
+            let likes = parseInt(countSpan.innerText);
 
-            // Verifica se é 'far' (vazio/regular) ou 'fas' (solid/cheio)
             if (icon.classList.contains('far')) {
-                // Ação de Curtir
                 icon.classList.remove('far'); 
                 icon.classList.add('fas');    
-                icon.style.color = '#e74c3c'; // Muda cor para vermelho
-                likes++; // Aumenta +1
+                icon.style.color = '#e74c3c';
+                likes++;
             } else {
-                // Ação de Descurtir
                 icon.classList.remove('fas');
                 icon.classList.add('far');
-                icon.style.color = ''; // Remove cor inline (volta ao padrão)
-                likes--; // Diminui -1
+                icon.style.color = '';
+                likes--;
             }
-            
-            // Atualiza o texto na tela
             countSpan.innerText = likes;
         }
 
         // --- SISTEMA DE COMENTÁRIOS ---
 
-        // Função que mostra ou esconde a div de comentários
         function toggleComentarios(btn) {
-            // .closest procura o elemento pai mais próximo com a classe 'post-card'
             const card = btn.closest('.post-card');
             const areaComentarios = card.querySelector('.area-comentarios');
             
-            // .toggle adiciona a classe se não existir, remove se existir
             areaComentarios.classList.toggle('aberto');
             
-            // Se abriu, já coloca o cursor no input para digitar
             if(areaComentarios.classList.contains('aberto')){
                 areaComentarios.querySelector('input').focus();
             }
         }
 
-        // Função para adicionar um novo comentário na lista
         function enviarComentario(btn) {
-            const areaInput = btn.parentElement; 
-            const input = areaInput.querySelector('input');
+            const input = btn.parentElement.querySelector('input');
             const texto = input.value;
             const card = btn.closest('.post-card'); 
 
-            // Se o texto for vazio, não faz nada
             if (texto.trim() === "") return;
 
-            // Cria o HTML do novo comentário usando Template Strings (``)
             const novaResposta = `
                 <div class="resposta-item">
                     <div class="resposta-autor">Beatris Caetano</div>
@@ -373,43 +390,34 @@
                 </div>
             `;
 
-            // Adiciona o HTML no final da lista de respostas
             const lista = card.querySelector('.lista-respostas');
             lista.insertAdjacentHTML('beforeend', novaResposta);
 
-            // Limpa o campo de texto
             input.value = "";
 
-            // Atualiza o contador visual de comentários (ícone do balão)
             const commentCountSpan = card.querySelector('.comments-count');
-            let count = parseInt(commentCountSpan.innerText);
-            commentCountSpan.innerText = count + 1;
+            commentCountSpan.innerText = parseInt(commentCountSpan.innerText) + 1;
         }
 
-        // --- CRIAÇÃO DE POST ---
+        // --- CRIAÇÃO DE POST (CORRIGIDA) ---
 
         function criarPost() {
-            // Pega os valores dos inputs
             var texto = document.getElementById("texto-post").value;
             var fileInput = document.getElementById("file-input-hidden");
             
-            // Validação: Não pode postar vazio e sem arquivo
             if (texto.trim() === "" && fileInput.files.length === 0) {
                 alert("Escreva algo ou anexe um arquivo!");
                 return;
             }
 
             var conteudoExtra = "";
-            // Lógica para visualizar o arquivo (Imagem ou Genérico)
             if (fileInput.files && fileInput.files[0]) {
                 var arquivo = fileInput.files[0];
                 
                 if (arquivo.type.startsWith('image/')) {
-                    // Cria URL temporária para imagem
                     var imgUrl = URL.createObjectURL(arquivo);
                     conteudoExtra = `<img src="${imgUrl}" class="post-image">`;
                 } else {
-                    // HTML para arquivo genérico
                     conteudoExtra = `
                         <div class="file-attachment">
                             <i class="fas fa-file-alt"></i>
@@ -418,10 +426,9 @@
                 }
             }
 
-            // Monta o HTML completo do card
-            // NOTA: Adicionamos os onclicks de curtir e comentar aqui também para funcionarem nos novos posts
+            // CORREÇÃO: Usando template strings (backticks ``) corretamente.
             var novoCard = `
-                <div class="post-card bd">
+                <div class="post-card bd" data-author="${USER_INITIALS}">
                     <div class="post-header">
                         <div class="author-info">
                             <div class="avatar-circle">BC</div>
@@ -456,15 +463,64 @@
                 </div>
             `;
 
-            // Insere o novo card no topo da lista (afterbegin)
             var feed = document.getElementById("feed-dinamico");
             feed.insertAdjacentHTML('afterbegin', novoCard);
 
-            // Reseta os campos para o estado inicial
             document.getElementById("texto-post").value = "";
             fileInput.value = ""; 
             document.getElementById('file-name-display').innerText = "";
+            
+            // Depois de postar, mantém o filtro atual (se for 'meus', ele vai aparecer)
+            // Se o filtro 'minhas' estiver ativo, o novo post (com data-author="BC") aparecerá.
         }
+
+
+        // --- FUNÇÃO DE FILTRAGEM ---
+        function filtrarPosts(filtro) {
+            const allPosts = document.querySelectorAll('.feed-area .post-card');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            // 1. ATUALIZA ESTILOS DOS BOTÕES
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active-filter');
+                // Garante que o botão cinza volte para o cinza
+                btn.style.background = '#ccc';
+                btn.style.color = '#555';
+            });
+
+            if (filtro === 'meus') {
+                document.getElementById('filtro-minhas').classList.add('active-filter');
+            } else { // filtro === 'todos'
+                document.getElementById('filtro-tudo').classList.add('active-filter');
+            }
+
+
+            // 2. ITERA E FILTRA OS POSTS
+            allPosts.forEach(post => {
+                const author = post.getAttribute('data-author');
+
+                if (filtro === 'todos') {
+                    // Mostrar todos
+                    post.classList.remove('hidden');
+                } else if (filtro === 'meus') {
+                    // Se o autor for o usuário logado (BC), mostra
+                    if (author === USER_INITIALS) {
+                        post.classList.remove('hidden');
+                    } else {
+                        // Se não for o autor, esconde
+                        post.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        // Inicializa o filtro "Tudo" ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+             // O filtro está ativado no HTML, mas garantimos que as cores estão corretas
+             document.getElementById('filtro-tudo').style.background = 'var(--primary-color)';
+             document.getElementById('filtro-tudo').style.color = 'white';
+        });
+        
     </script>
 </body>
 </html>

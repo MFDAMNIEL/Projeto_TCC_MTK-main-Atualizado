@@ -13,19 +13,19 @@
            CSS - ESTILIZAÇÃO
            ========================================= */
 
-        /* :root define variáveis globais. MANTIDAS AS CORES ORIGINAIS (VERDE) */
+        /* Variáveis ATUALIZADAS. Mantendo cores primárias originais (verde/água) */
         :root {
-            --primary-color: #2d8b8b;  /* Verde Água (Padrão) */
-            --primary-dark: #236e6e;   /* Verde mais escuro (Hover) */
+            --primary-color: #2d8b8b;  /* Cor principal (verde água) */
+            --primary-dark: #236e6e;   /* Cor principal mais escura (hover) */
             --bg-color: #f4f7f6;       /* Cor de fundo do site */
             --card-bg: #ffffff;        /* Cor de fundo dos posts */
             --text-color: #333;        /* Cor do texto principal */
-            --text-muted: #777;        /* Cor de texto secundário */
-            --border-radius: 12px;     /* Arredondamento */
-            --color-highlight: #3498db; /* Azul para destaque das tags */
+            --text-muted: #777;        /* Cor de texto secundário (cinza) */
+            --border-radius: 12px;     /* Arredondamento padrão das bordas */
+            /* Cor de Destaque para Redes de Computadores (REDES) - Azul */
+            --color-redes: #3498db; 
         }
 
-        /* Reset básico */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
         
         body { background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
@@ -41,6 +41,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
+        /* Nome do curso no cabeçalho atualizado */
         .logo { font-size: 1.5rem; font-weight: 700; }
         .user-info { display: flex; align-items: center; gap: 10px; font-weight: 600; }
         
@@ -52,7 +53,6 @@
 
         /* --- LAYOUT PRINCIPAL (GRID) --- */
         .main-container {
-            /* Grid de 2 colunas: Menu (250px) e Feed (resto) */
             display: grid; grid-template-columns: 250px 1fr; gap: 25px;
             max-width: 1000px; 
             margin: 90px auto 30px; padding: 0 20px;
@@ -94,12 +94,48 @@
         }
         .btn-post:hover { background-color: var(--primary-dark); }
 
+        /* --- TAGS E FILTROS --- */
+        .course-tag {
+            padding: 5px 15px;       
+            border-radius: 20px;     
+            font-size: 0.8rem;       
+            font-weight: 700;        
+            color: white;            
+            display: inline-flex;    
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        
+        /* Classe da tag específica (usa o AZUL) */
+        .bg-redes {
+            background-color: var(--color-redes);
+        }
+        
+        /* Estilos do filtro */
+        .filter-btn {
+             transition: all 0.2s;
+             background: #ccc !important; 
+             color: #555 !important;
+        }
+        
+        .filter-btn.active-filter {
+            background: var(--primary-color) !important; 
+            color: white !important;
+            box-shadow: 0 0 5px rgba(45, 139, 139, 0.5);
+        }
+
+        .post-card.hidden {
+            display: none !important;
+        }
+        
+
         /* --- CARD DE POSTAGEM --- */
         .post-card {
             background: var(--card-bg); border-radius: var(--border-radius); padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-            border-left: 5px solid var(--color-highlight); /* Detalhe lateral azul */
-            animation: fadeIn 0.5s ease;
+            /* Borda agora usa o AZUL de Destaque */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid var(--color-redes);
+            animation: fadeIn 0.5s ease; 
         }
         
         @keyframes fadeIn {
@@ -108,13 +144,6 @@
         }
 
         .post-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .author-info { display: flex; gap: 12px; align-items: center; }
-        .author-name { font-weight: 700; font-size: 1rem; }
-        .post-time { font-size: 0.8rem; color: var(--text-muted); }
-        
-        .course-tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 15px; font-weight: 700; color: white; }
-        .bg-highlight { background-color: var(--color-highlight); }
-
         .post-content p { margin-bottom: 15px; line-height: 1.6; color: #444; }
         
         .post-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #eee; }
@@ -129,7 +158,8 @@
 
         /* --- SISTEMA DE COMENTÁRIOS --- */
         .area-comentarios {
-            margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; display: none; 
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; 
+            display: none; 
         }
         .area-comentarios.aberto { display: block; animation: fadeIn 0.3s ease; }
         
@@ -179,7 +209,7 @@
             <div class="create-post-box">
                 <div class="create-input-wrapper">
                     <div class="avatar-circle" style="background: #eee; color: #999; min-width: 35px;">BC</div>
-                    <textarea id="texto-post" placeholder="Dúvidas sobre TCP/IP, OSI ou Segurança?"></textarea>
+                    <textarea id="texto-post" placeholder="Poste uma dúvida sobre Redes de Computadores (protocolos, topologias, hardware)..."></textarea>
                 </div>
                 
                 <input type="file" id="file-input-hidden" style="display: none;" onchange="mostrarNomeArquivo()">
@@ -196,37 +226,33 @@
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <span class="course-tag" style="background: #3498db; cursor: pointer;">Tudo</span>
-                <span class="course-tag" style="background: #ccc; color: #555; cursor: pointer;">Minhas Dúvidas</span>
+                <span id="filtro-tudo" class="course-tag filter-btn" style="cursor: pointer;" onclick="filtrarPosts('todos')">Tudo</span>
+                <span id="filtro-minhas" class="course-tag filter-btn" style="cursor: pointer;" onclick="filtrarPosts('meus')">Minhas Dúvidas</span>
             </div>
 
             <div id="feed-dinamico"></div>
 
-            <div class="post-card bd">
+            <div class="post-card redes" data-author="MV">
                 <div class="post-header">
                     <div class="author-info">
-                        <div class="avatar-circle" style="background: #e67e22; color: white;">RA</div>
+                        <div class="avatar-circle" style="background: var(--color-redes); color: white;">MV</div>
                         <div>
-                            <div class="author-name">Rafael Admin</div>
-                            <div class="post-time">Há 30 min</div>
+                            <div class="author-name">Márcio V.</div>
+                            <div class="post-time">Há 2 horas</div>
                         </div>
                     </div>
-                    <span class="course-tag bg-highlight">Infraestrutura</span>
+                    <span class="course-tag bg-redes">Subnetting</span>
                 </div>
                 <div class="post-content">
-                    <p>Galera, meu servidor pinga no 127.0.0.1, mas não pinga pro Google (8.8.8.8). Alguém sabe o que pode ser?</p>
-                    <div class="code-block">
-C:\> ping 8.8.8.8
-Esgotado o tempo limite do pedido.
-Perdidos = 4 (100% de perda)
-                    </div>
+                    <p>Qual a diferença entre uma máscara de sub-rede `/24` e `/26`? Como isso afeta o número de hosts por rede? 🖥️</p>
+                    <div class="code-block">Máscara /24 = 255.255.255.0</div>
                 </div>
                 <div class="post-footer">
                     <div class="interaction-item" onclick="curtirPost(this)">
-                        <i class="far fa-heart"></i> <span class="likes-count">5</span>
+                        <i class="far fa-heart"></i> <span class="likes-count">15</span>
                     </div>
                     <div class="interaction-item" onclick="toggleComentarios(this)">
-                        <i class="far fa-comment"></i> <span class="comments-count">2</span>
+                        <i class="far fa-comment"></i> <span class="comments-count">4</span>
                     </div>
                 </div>
 
@@ -237,33 +263,33 @@ Perdidos = 4 (100% de perda)
                     </div>
                     <div class="lista-respostas">
                         <div class="resposta-item">
-                            <div class="resposta-autor">Marcos Net</div>
-                            Verifica o <b>Gateway Padrão</b> nas configurações de adaptador. Parece que ele não sabe pra onde enviar o pacote pra fora.
+                            <div class="resposta-autor">João P.</div>
+                            O /24 permite 254 hosts por rede. O /26 deixa apenas 62 hosts, mas permite criar 4 sub-redes a partir de uma rede classe C.
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="post-card bd">
+            <div class="post-card redes" data-author="Prof">
                 <div class="post-header">
                     <div class="author-info">
-                        <div class="avatar-circle" style="background: #9b59b6; color: white;">PA</div>
+                        <div class="avatar-circle" style="background: #2ecc71; color: white;">Prof</div>
                         <div>
-                            <div class="author-name">Prof. Ana</div>
-                            <div class="post-time">Há 4 horas</div>
+                            <div class="author-name">Prof. Carlos</div>
+                            <div class="post-time">Há 5 horas</div>
                         </div>
                     </div>
-                    <span class="course-tag bg-highlight">Teoria</span>
+                    <span class="course-tag bg-redes">Modelo OSI</span>
                 </div>
                 <div class="post-content">
-                    <p>Não esqueçam para a prova: A camada de <strong>Transporte</strong> é responsável pela entrega confiável (TCP) ou rápida (UDP). 📡</p>
+                    <p>Lembrem-se da importância do **modelo OSI** para diagnosticar problemas! Onde o protocolo **HTTP** se encaixa e qual o papel do TCP?</p>
                 </div>
                 <div class="post-footer">
                     <div class="interaction-item" onclick="curtirPost(this)">
-                        <i class="far fa-heart"></i> <span class="likes-count">28</span>
+                        <i class="far fa-heart"></i> <span class="likes-count">48</span>
                     </div>
                     <div class="interaction-item" onclick="toggleComentarios(this)">
-                        <i class="far fa-comment"></i> <span class="comments-count">7</span>
+                        <i class="far fa-comment"></i> <span class="comments-count">10</span>
                     </div>
                 </div>
 
@@ -272,7 +298,12 @@ Perdidos = 4 (100% de perda)
                         <input type="text" class="input-comentario" placeholder="Escreva uma resposta...">
                         <button class="btn-enviar-comentario" onclick="enviarComentario(this)"><i class="fas fa-paper-plane"></i></button>
                     </div>
-                    <div class="lista-respostas"></div>
+                    <div class="lista-respostas">
+                        <div class="resposta-item">
+                            <div class="resposta-autor">Beatris Caetano</div>
+                            HTTP é Camada 7 (Aplicação). TCP é Camada 4 (Transporte) e garante a entrega confiável dos dados.
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -281,15 +312,14 @@ Perdidos = 4 (100% de perda)
 
     <script>
         
-        // --- SELEÇÃO DE ARQUIVO ---
+        const USER_INITIALS = "BC"; 
+
+        // --- FUNÇÕES BÁSICAS ---
+        
         function abrirSeletorArquivo(tipo) {
             const input = document.getElementById('file-input-hidden');
-            
-            if(tipo === 'imagem') {
-                input.accept = "image/*";
-            } else {
-                input.removeAttribute('accept');
-            }
+            if(tipo === 'imagem') input.accept = "image/*";
+            else input.removeAttribute('accept');
             input.click();
         }
 
@@ -305,16 +335,15 @@ Perdidos = 4 (100% de perda)
             }
         }
 
-        // --- SISTEMA DE LIKES ---
         function curtirPost(btn) {
-            const icon = btn.querySelector('i');
-            const countSpan = btn.querySelector('.likes-count');
-            let likes = parseInt(countSpan.innerText);
+            const icon = btn.querySelector('i'); 
+            const countSpan = btn.querySelector('.likes-count'); 
+            let likes = parseInt(countSpan.innerText); 
 
             if (icon.classList.contains('far')) {
                 icon.classList.remove('far'); 
                 icon.classList.add('fas');    
-                icon.style.color = '#e74c3c'; 
+                icon.style.color = '#e74c3c'; // Coração vermelho padrão de curtida
                 likes++; 
             } else {
                 icon.classList.remove('fas');
@@ -325,10 +354,10 @@ Perdidos = 4 (100% de perda)
             countSpan.innerText = likes;
         }
 
-        // --- SISTEMA DE COMENTÁRIOS ---
         function toggleComentarios(btn) {
             const card = btn.closest('.post-card');
             const areaComentarios = card.querySelector('.area-comentarios');
+            
             areaComentarios.classList.toggle('aberto');
             
             if(areaComentarios.classList.contains('aberto')){
@@ -353,6 +382,7 @@ Perdidos = 4 (100% de perda)
 
             const lista = card.querySelector('.lista-respostas');
             lista.insertAdjacentHTML('beforeend', novaResposta);
+
             input.value = "";
 
             const commentCountSpan = card.querySelector('.comments-count');
@@ -360,7 +390,6 @@ Perdidos = 4 (100% de perda)
             commentCountSpan.innerText = count + 1;
         }
 
-        // --- CRIAÇÃO DE POST ---
         function criarPost() {
             var texto = document.getElementById("texto-post").value;
             var fileInput = document.getElementById("file-input-hidden");
@@ -386,8 +415,9 @@ Perdidos = 4 (100% de perda)
                 }
             }
 
+            // A classe 'redes' é usada para o CSS
             var novoCard = `
-                <div class="post-card bd">
+                <div class="post-card redes" data-author="BC">
                     <div class="post-header">
                         <div class="author-info">
                             <div class="avatar-circle">BC</div>
@@ -396,7 +426,7 @@ Perdidos = 4 (100% de perda)
                                 <div class="post-time">Agora mesmo</div>
                             </div>
                         </div>
-                        <span class="course-tag bg-highlight">Postagem</span>
+                        <span class="course-tag bg-redes">Postagem</span>
                     </div>
                     <div class="post-content">
                         <p>${texto}</p>
@@ -429,6 +459,50 @@ Perdidos = 4 (100% de perda)
             fileInput.value = ""; 
             document.getElementById('file-name-display').innerText = "";
         }
+
+
+        // --- FUNÇÃO DE FILTRAGEM (GARANTE QUE 'TUDO' ESTÁ ATIVO POR PADRÃO) ---
+        function filtrarPosts(filtro) {
+            const authorFilter = (filtro === 'meus') ? USER_INITIALS : null;
+            
+            const allPosts = document.querySelectorAll('.feed-area .post-card');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            // 1. ATUALIZA ESTILOS DOS BOTÕES
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active-filter');
+            });
+
+            if (filtro === 'meus') {
+                document.getElementById('filtro-minhas').classList.add('active-filter');
+            } else { // filtro === 'todos'
+                document.getElementById('filtro-tudo').classList.add('active-filter');
+            }
+
+
+            // 2. ITERA E FILTRA OS POSTS
+            allPosts.forEach(post => {
+                const author = post.getAttribute('data-author');
+
+                if (authorFilter === null) {
+                    // Mostrar todos
+                    post.classList.remove('hidden');
+                } else {
+                    // Mostrar apenas posts que correspondam ao autor
+                    if (author === authorFilter) {
+                        post.classList.remove('hidden');
+                    } else {
+                        post.classList.add('hidden');
+                    }
+                }
+            });
+        }
+        
+        // Inicialização: Garante que o filtro 'todos' é o padrão ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+             filtrarPosts('todos');
+        });
+        
     </script>
 </body>
 </html>
